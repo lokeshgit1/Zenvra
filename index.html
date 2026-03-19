@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation Health Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary-color: #38bdf8;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background-image: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            height: 150px;
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            margin-top: 1rem;
+        }
+
+        .bar {
+            flex: 1;
+            background: var(--primary-color);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease;
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        .bar:hover {
+            opacity: 1;
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .log-table th {
+            text-align: left;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.75rem;
+        }
+
+        .log-table td {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .timestamp {
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        .error .dot {
+            background: var(--error-color);
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Automation Dashboard</h1>
+            <div id="status-container">
+                <div class="status-badge" id="main-status">
+                    <span class="dot"></span> System Operational
+                </div>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <span class="card-label">Last Successful Run</span>
+                <div class="card-value" id="last-run-time">...</div>
+                <div id="last-run-relative" style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.875rem;">Connecting...</div>
+            </div>
+            <div class="card">
+                <span class="card-label">Total Hourly Runs</span>
+                <div class="card-value" id="total-runs">0</div>
+                <div class="chart-container" id="chart">
+                    <!-- Bars injected here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="card-label">Recent Activity Log</span>
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="log-body">
+                    <!-- Logs injected here -->
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            Auto-refreshing every 60s • Built with 🤖 Antigravity
+        </footer>
+    </div>
+
+    <script>
+        async function fetchLogs() {
+            try {
+                // Fetch the log file
+                const response = await fetch('daemon-log.json');
+                if (!response.ok) throw new Error('Log file not found');
+                const text = await response.text();
+                
+                // Parse JSONL (one JSON per line)
+                const logs = text.trim().split('\n').map(line => JSON.parse(line)).reverse();
+                return logs;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return [];
+            }
+        }
+
+        function formatRelativeTime(date) {
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return `${diff}s ago`;
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        function updateUI(logs) {
+            if (logs.length === 0) return;
+
+            const latest = logs[0];
+            const latestDate = new Date(latest.time);
+            
+            // Update Main Status
+            const statusBadge = document.getElementById('main-status');
+            const now = new Date();
+            const hoursSinceLast = (now - latestDate) / (1000 * 60 * 60);
+
+            if (latest.status === 'error' || hoursSinceLast > 2) {
+                statusBadge.innerHTML = '<span class="dot"></span> System Warning';
+                statusBadge.classList.add('error');
+            } else {
+                statusBadge.innerHTML = '<span class="dot"></span> System Operational';
+                statusBadge.classList.remove('error');
+            }
+
+            // Update Run Stats
+            document.getElementById('last-run-time').innerText = latestDate.toLocaleTimeString();
+            document.getElementById('last-run-relative').innerText = formatRelativeTime(latestDate);
+            document.getElementById('total-runs').innerText = logs.length;
+
+            // Update Log Table (Last 5)
+            const logBody = document.getElementById('log-body');
+            logBody.innerHTML = '';
+            logs.slice(0, 5).forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="timestamp">${new Date(log.time).toLocaleTimeString()}</td>
+                    <td>${log.type}</td>
+                    <td style="color: ${log.status === 'success' ? '#10b981' : '#ef4444'}">${log.status}</td>
+                `;
+                logBody.appendChild(tr);
+            });
+
+            // Update Simple Chart (Runs per day-like visualization)
+            // Just for demo, we'll show frequency of last 10 entries as mock segments
+            const chart = document.getElementById('chart');
+            chart.innerHTML = '';
+            const max = 100;
+            for(let i=0; i<15; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                // Random height for visualization demo unless we calculate real daily counts
+                const height = logs[i] ? (80 + Math.random() * 20) : (Math.random() * 20); 
+                bar.style.height = `${height}%`;
+                chart.appendChild(bar);
+            }
+        }
+
+        async function init() {
+            const logs = await fetchLogs();
+            updateUI(logs);
+        }
+
+        // Initialize and setup refresh
+        init();
+        setInterval(init, 60000);
+    </script>
+</body>
+</html>

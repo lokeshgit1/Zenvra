@@ -41,11 +41,13 @@ async function generateAICommitMessage(diff) {
 }
 
 // Function to log activity in JSON format
-function logActivity() {
+function logActivity(status = 'success', error = null) {
     const logPath = path.join(__dirname, 'daemon-log.json');
     const entry = {
         time: new Date().toISOString(),
-        type: 'auto'
+        type: 'auto',
+        status: status,
+        error: error
     };
     fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
 }
@@ -55,7 +57,7 @@ function touchFile() {
     const filepath = path.join(__dirname, 'daemon.txt');
     const content = `Daemon run at: ${new Date().toLocaleString()}\n`;
     fs.appendFileSync(filepath, content);
-    logActivity();
+    logActivity('success');
 }
 
 //deamoning
@@ -101,6 +103,7 @@ async function daemoning() {
         console.log('Daemon has completed its tasks.');
     } catch (error) {
         console.error('Error running daemon:', error);
+        logActivity('error', error.toString());
     }
 }
 
