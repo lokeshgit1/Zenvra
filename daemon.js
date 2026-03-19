@@ -63,12 +63,12 @@ async function daemoning() {
     try {
         console.log('Daemon is running...');
 
-        // step 1: Update local file
-        touchFile();
-
-        // step 2: Pull with rebase to handle remote changes
+        // step 1: Pull with rebase to handle remote changes
         console.log('Pulling with rebase...');
         await run("git pull --rebase origin main");
+
+        // step 2: Update local file
+        touchFile();
 
         // step 3: Add changes
         await run("git add .");
