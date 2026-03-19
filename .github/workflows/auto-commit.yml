@@ -2,7 +2,7 @@ name: Auto Commit Bot
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 */2 * * *"   # every 2 hours
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,9 @@ permissions:
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
+
+    # 🔥 Prevent infinite loop
+    if: github.actor != 'github-actions[bot]'
 
     steps:
       - name: 📥 Checkout repo
@@ -27,10 +30,10 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: 📦 Commit
+      - name: 📦 Smart Commit
         run: |
           git add .
-          git commit -m "Auto commit $(date)" || echo "No changes"
+          git diff --cached --quiet || git commit -m "chore: automated update $(date)"
 
       - name: 🚀 Push
         run: |
