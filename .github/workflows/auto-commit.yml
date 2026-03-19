@@ -2,11 +2,11 @@ name: Auto Commit Bot
 
 on:
   schedule:
-    - cron: "0 * * * *"   # every 1 hour (recommended)
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:
-  contents: write  
+  contents: write
 
 jobs:
   auto-commit:
@@ -14,22 +14,24 @@ jobs:
 
     steps:
       - name: 📥 Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
-      - name: 📝 Make change (dummy file)
+      - name: 📝 Make change
         run: |
           echo "Updated at $(date)" >> daemon.txt
 
       - name: ⚙️ Configure Git
         run: |
-          git config --global user.name "auto-bot"
-          git config --global user.email "auto@bot.com"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-      - name: 📦 Commit changes
+      - name: 📦 Commit
         run: |
           git add .
           git commit -m "Auto commit $(date)" || echo "No changes"
 
-      - name: 🚀 Push changes
+      - name: 🚀 Push
         run: |
-          git push
+          git push origin HEAD:main
