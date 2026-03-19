@@ -1,0 +1,32 @@
+name: Auto Commit Bot
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every 1 hour (recommended)
+  workflow_dispatch:
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v3
+
+      - name: 📝 Make change (dummy file)
+        run: |
+          echo "Updated at $(date)" >> daemon.txt
+
+      - name: ⚙️ Configure Git
+        run: |
+          git config --global user.name "auto-bot"
+          git config --global user.email "auto@bot.com"
+
+      - name: 📦 Commit changes
+        run: |
+          git add .
+          git commit -m "Auto commit $(date)" || echo "No changes"
+
+      - name: 🚀 Push changes
+        run: |
+          git push
