@@ -49,6 +49,7 @@
             font-weight: 700;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #38bdf8, #818cf8);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -194,6 +195,13 @@
 
         <div class="grid">
             <div class="card">
+                <span class="card-label">Bitcoin Price (USD)</span>
+                <div class="card-value" id="btc-price">$0</div>
+                <div class="chart-container" id="btc-chart">
+                    <!-- BTC bars injected here -->
+                </div>
+            </div>
+            <div class="card">
                 <span class="card-label">Last Successful Run</span>
                 <div class="card-value" id="last-run-time">...</div>
                 <div id="last-run-relative" style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.875rem;">Connecting...</div>
@@ -202,7 +210,7 @@
                 <span class="card-label">Total Hourly Runs</span>
                 <div class="card-value" id="total-runs">0</div>
                 <div class="chart-container" id="chart">
-                    <!-- Bars injected here -->
+                    <!-- Status bars injected here -->
                 </div>
             </div>
         </div>
@@ -229,19 +237,24 @@
     </div>
 
     <script>
-        async function fetchLogs() {
+        async function fetchData() {
             try {
+                // Fetch the price history
+                const priceRes = await fetch('data.json');
+                const priceData = priceRes.ok ? await priceRes.json() : [];
+
                 // Fetch the log file
-                const response = await fetch('daemon-log.json');
-                if (!response.ok) throw new Error('Log file not found');
-                const text = await response.text();
-                
-                // Parse JSONL (one JSON per line)
-                const logs = text.trim().split('\n').map(line => JSON.parse(line)).reverse();
-                return logs;
+                const logRes = await fetch('daemon-log.json');
+                const logText = logRes.ok ? await logRes.text() : '';
+                const logs = logText.trim().split('\n')
+                    .filter(line => line.trim())
+                    .map(line => JSON.parse(line))
+                    .reverse();
+
+                return { prices: priceData, logs: logs };
             } catch (error) {
                 console.error('Fetch error:', error);
-                return [];
+                return { prices: [], logs: [] };
             }
         }
 
@@ -255,61 +268,83 @@
             return date.toLocaleDateString();
         }
 
-        function updateUI(logs) {
-            if (logs.length === 0) return;
+        function updateUI(data) {
+            const logs = data.logs;
+            const prices = data.prices;
 
-            const latest = logs[0];
-            const latestDate = new Date(latest.time);
-            
-            // Update Main Status
-            const statusBadge = document.getElementById('main-status');
-            const now = new Date();
-            const hoursSinceLast = (now - latestDate) / (1000 * 60 * 60);
+            if (logs.length > 0) {
+                const latest = logs[0];
+                const latestDate = new Date(latest.time);
+                
+                // Update Main Status
+                const statusBadge = document.getElementById('main-status');
+                const now = new Date();
+                const hoursSinceLast = (now - latestDate) / (1000 * 60 * 60);
 
-            if (latest.status === 'error' || hoursSinceLast > 2) {
-                statusBadge.innerHTML = '<span class="dot"></span> System Warning';
-                statusBadge.classList.add('error');
-            } else {
-                statusBadge.innerHTML = '<span class="dot"></span> System Operational';
-                statusBadge.classList.remove('error');
+                if (latest.status === 'error' || hoursSinceLast > 2) {
+                    statusBadge.innerHTML = '<span class="dot"></span> System Warning';
+                    statusBadge.classList.add('error');
+                } else {
+                    statusBadge.innerHTML = '<span class="dot"></span> System Operational';
+                    statusBadge.classList.remove('error');
+                }
+
+                // Update Run Stats
+                document.getElementById('last-run-time').innerText = latestDate.toLocaleTimeString();
+                document.getElementById('last-run-relative').innerText = formatRelativeTime(latestDate);
+                document.getElementById('total-runs').innerText = logs.length;
+
+                // Update Log Table (Last 5)
+                const logBody = document.getElementById('log-body');
+                logBody.innerHTML = '';
+                logs.slice(0, 5).forEach(log => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="timestamp">${new Date(log.time).toLocaleTimeString()}</td>
+                        <td>${log.type}</td>
+                        <td style="color: ${log.status === 'success' ? '#10b981' : '#ef4444'}">${log.status}</td>
+                    `;
+                    logBody.appendChild(tr);
+                });
+
+                // Update Status Chart
+                const chart = document.getElementById('chart');
+                chart.innerHTML = '';
+                for(let i=0; i<15; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    const height = logs[i] ? (80 + Math.random() * 20) : (Math.random() * 20); 
+                    bar.style.height = `${height}%`;
+                    chart.appendChild(bar);
+                }
             }
 
-            // Update Run Stats
-            document.getElementById('last-run-time').innerText = latestDate.toLocaleTimeString();
-            document.getElementById('last-run-relative').innerText = formatRelativeTime(latestDate);
-            document.getElementById('total-runs').innerText = logs.length;
+            // Update BTC Stats
+            if (prices.length > 0) {
+                const latestPrice = prices[prices.length - 1];
+                document.getElementById('btc-price').innerText = `$${latestPrice.price.toLocaleString()}`;
 
-            // Update Log Table (Last 5)
-            const logBody = document.getElementById('log-body');
-            logBody.innerHTML = '';
-            logs.slice(0, 5).forEach(log => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="timestamp">${new Date(log.time).toLocaleTimeString()}</td>
-                    <td>${log.type}</td>
-                    <td style="color: ${log.status === 'success' ? '#10b981' : '#ef4444'}">${log.status}</td>
-                `;
-                logBody.appendChild(tr);
-            });
+                const btcChart = document.getElementById('btc-chart');
+                btcChart.innerHTML = '';
+                const maxPrice = Math.max(...prices.map(p => p.price));
+                const minPrice = Math.min(...prices.map(p => p.price));
+                const range = maxPrice - minPrice || 1;
 
-            // Update Simple Chart (Runs per day-like visualization)
-            // Just for demo, we'll show frequency of last 10 entries as mock segments
-            const chart = document.getElementById('chart');
-            chart.innerHTML = '';
-            const max = 100;
-            for(let i=0; i<15; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'bar';
-                // Random height for visualization demo unless we calculate real daily counts
-                const height = logs[i] ? (80 + Math.random() * 20) : (Math.random() * 20); 
-                bar.style.height = `${height}%`;
-                chart.appendChild(bar);
+                prices.slice(-15).forEach(p => {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    // Scale height between 30% and 100%
+                    const height = 30 + ((p.price - minPrice) / range) * 70;
+                    bar.style.height = `${height}%`;
+                    bar.title = `$${p.price.toLocaleString()} at ${new Date(p.time).toLocaleTimeString()}`;
+                    btcChart.appendChild(bar);
+                });
             }
         }
 
         async function init() {
-            const logs = await fetchLogs();
-            updateUI(logs);
+            const data = await fetchData();
+            updateUI(data);
         }
 
         // Initialize and setup refresh

@@ -52,11 +52,56 @@ function logActivity(status = 'success', error = null) {
     fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
 }
 
+// Function to fetch Bitcoin price
+async function fetchBitcoinPrice() {
+    try {
+        console.log('Fetching Bitcoin price...');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.bitcoin.usd;
+    } catch (error) {
+        console.error('Error fetching Bitcoin price:', error);
+        return null;
+    }
+}
+
+// Function to update data.json with price history
+function updateData(price) {
+    const dataPath = path.join(__dirname, 'data.json');
+    let history = [];
+    if (fs.existsSync(dataPath)) {
+        try {
+            const content = fs.readFileSync(dataPath, 'utf8');
+            history = JSON.parse(content || '[]');
+        } catch (e) {
+            console.error('Error reading data.json:', e);
+        }
+    }
+    
+    history.push({
+        time: new Date().toISOString(),
+        price: price
+    });
+
+    // Keep only last 24 entries (one day if hourly)
+    if (history.length > 24) history.shift();
+
+    fs.writeFileSync(dataPath, JSON.stringify(history, null, 2));
+}
+
 // Create a function to run the daemon in the background
-function touchFile() {
+async function touchFile() {
     const filepath = path.join(__dirname, 'daemon.txt');
     const content = `Daemon run at: ${new Date().toLocaleString()}\n`;
     fs.appendFileSync(filepath, content);
+    
+    const price = await fetchBitcoinPrice();
+    if (price) {
+        console.log(`Bitcoin price: $${price}`);
+        updateData(price);
+    }
+    
     logActivity('success');
 }
 
