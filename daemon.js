@@ -65,17 +65,13 @@ async function daemoning() {
     try {
         console.log('Daemon is running...');
 
-        // step 1: Pull with rebase to handle remote changes
-        console.log('Pulling with rebase...');
-        await run("git pull --rebase origin main");
-
-        // step 2: Update local file
+        // step 1: Update local file
         touchFile();
 
-        // step 3: Add changes
+        // step 2: Add changes
         await run("git add .");
 
-        // step 4: Get diff and generate AI message
+        // step 3: Get diff and generate AI message
         console.log('Generating AI commit message...');
         const diff = await run("git diff --cached");
         let message = await generateAICommitMessage(diff);
@@ -94,6 +90,10 @@ async function daemoning() {
         
         console.log(`Committing with message: ${message}`);
         await run(`git commit -m "${message}" || echo "No changes to commit"`);
+
+        // step 4: Pull with rebase to handle remote changes
+        console.log('Pulling with rebase...');
+        await run("git pull --rebase origin main");
 
         // step 5: Push to current branch
         const branch = await run("git rev-parse --abbrev-ref HEAD");
