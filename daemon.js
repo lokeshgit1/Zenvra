@@ -84,6 +84,20 @@ async function fetchWeather(lat, lon) {
     }
 }
 
+// Function to fetch exchange rate (USD to INR)
+async function fetchExchangeRate() {
+    try {
+        console.log('Fetching USD/INR exchange rate...');
+        const response = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.rates.INR;
+    } catch (error) {
+        console.error('Error fetching exchange rate:', error);
+        return null;
+    }
+}
+
 // Function to ping websites
 async function pingSites(urls) {
     const results = [];
@@ -177,7 +191,7 @@ async function fetchGitHubStats(username) {
 }
 
 // Function to update data.json with history
-function updateData(btcPrice, weather, github, uptime) {
+function updateData(btcPrice, weather, github, uptime, exchangeRate) {
     const dataPath = path.join(__dirname, 'data.json');
     let history = [];
     if (fs.existsSync(dataPath)) {
@@ -200,7 +214,8 @@ function updateData(btcPrice, weather, github, uptime) {
         price: btcPrice,
         weather: weather,
         github: github,
-        uptime: uptime
+        uptime: uptime,
+        exchangeRate: exchangeRate
     });
 
     // Keep only last 24 entries
@@ -220,15 +235,16 @@ async function touchFile() {
         const configPath = path.join(__dirname, 'config.json');
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
-        const [price, weather, github, uptime] = await Promise.all([
+        const [price, weather, github, uptime, exchangeRate] = await Promise.all([
             fetchBitcoinPrice(),
             fetchWeather(config.location.lat, config.location.lon),
             fetchGitHubStats(config.github.username),
-            pingSites(config.monitors || [])
+            pingSites(config.monitors || []),
+            fetchExchangeRate()
         ]);
 
-        if (price || weather || github || uptime) {
-            updateData(price, weather, github, uptime);
+        if (price || weather || github || uptime || exchangeRate) {
+            updateData(price, weather, github, uptime, exchangeRate);
         }
         
         logActivity('success');

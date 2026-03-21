@@ -382,6 +382,10 @@
                 <span class="card-label">Bitcoin Price (USD)</span>
                 <div class="card-value" id="btc-price">$0</div>
                 <div class="chart-container" id="btc-chart"></div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">USD / INR</span>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary-color);" id="usd-inr">₹--.--</span>
+                </div>
             </div>
             <div class="card">
                 <span class="card-label">Last Successful Run</span>
@@ -538,8 +542,9 @@
             if (prices.length > 0) {
                 const latestData = prices[prices.length - 1];
                 
-                // BTC
+                // BTC & Exchange Rate
                 if(latestData.price) document.getElementById('btc-price').innerText = `$${latestData.price.toLocaleString()}`;
+                if(latestData.exchangeRate) document.getElementById('usd-inr').innerText = `₹${latestData.exchangeRate.toFixed(2)}`;
                 
                 // Weather
                 if(latestData.weather) {
