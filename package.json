@@ -1,17 +1,33 @@
 {
-  "name": "automation",
+  "name": "automo-git",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-powered automated git commits and syncing daemon.",
   "main": "index.js",
+  "bin": {
+    "automo": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "index.js"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "git",
+    "automation",
+    "ai",
+    "gemini",
+    "autocommit",
+    "sync"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "commander": "^13.1.0",
     "dotenv": "^17.3.1"
   }
 }
