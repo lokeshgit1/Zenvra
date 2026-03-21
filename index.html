@@ -174,6 +174,54 @@
             background: var(--error-color);
         }
 
+        .search-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+        
+        .search-container.active { display: block; }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+        
+        .overlay.active { display: block; }
+
         footer {
             text-align: center;
             color: var(--text-secondary);
@@ -195,11 +243,26 @@
 
         <div class="grid">
             <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <span class="card-label">Weather Tracking</span>
+                    <button class="btn" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="toggleSearch()">Change</button>
+                </div>
+                <div class="card-value" id="weather-temp">--°C</div>
+                <div id="weather-desc" style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</div>
+                <div class="chart-container" id="weather-chart"></div>
+            </div>
+            <div class="card">
+                <span class="card-label">GitHub Profile</span>
+                <div class="card-value" id="github-repos">0 Repos</div>
+                <div id="github-details" style="color: var(--text-secondary); font-size: 0.875rem;">...</div>
+                <div id="top-project" style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; font-size: 0.8rem;">
+                    <span style="color: var(--primary-color); font-weight: 600;">Top Project:</span> <span id="project-name">...</span>
+                </div>
+            </div>
+            <div class="card">
                 <span class="card-label">Bitcoin Price (USD)</span>
                 <div class="card-value" id="btc-price">$0</div>
-                <div class="chart-container" id="btc-chart">
-                    <!-- BTC bars injected here -->
-                </div>
+                <div class="chart-container" id="btc-chart"></div>
             </div>
             <div class="card">
                 <span class="card-label">Last Successful Run</span>
@@ -229,6 +292,16 @@
                     <!-- Logs injected here -->
                 </tbody>
             </table>
+        </div>
+
+        <div class="overlay" id="overlay" onclick="toggleSearch()"></div>
+        <div class="search-container" id="search-box">
+            <h3 style="margin-bottom: 1rem;">Set Location</h3>
+            <input type="text" class="search-input" id="city-input" placeholder="Enter city name (e.g. London)">
+            <button class="btn" onclick="searchCity()">Search & Set</button>
+            <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 1rem;">
+                *Note: This updates your view. To update the bot, edit `config.json`.
+            </p>
         </div>
 
         <footer>
@@ -268,6 +341,32 @@
             return date.toLocaleDateString();
         }
 
+                function toggleSearch() {
+            document.getElementById('search-box').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        async function searchCity() {
+            const city = document.getElementById('city-input').value;
+            if(!city) return;
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const data = await res.json();
+                if(data.results && data.results.length > 0) {
+                    const loc = data.results[0];
+                    localStorage.setItem('user-location', JSON.stringify({
+                        name: loc.name,
+                        lat: loc.latitude,
+                        lon: loc.longitude
+                    }));
+                    alert(`Location set to ${loc.name}! Refreshing...`);
+                    location.reload();
+                } else {
+                    alert('City not found!');
+                }
+            } catch(e) { console.error(e); }
+        }
+
         function updateUI(data) {
             const logs = data.logs;
             const prices = data.prices;
@@ -294,7 +393,7 @@
                 document.getElementById('last-run-relative').innerText = formatRelativeTime(latestDate);
                 document.getElementById('total-runs').innerText = logs.length;
 
-                // Update Log Table (Last 5)
+                // Update Log Table
                 const logBody = document.getElementById('log-body');
                 logBody.innerHTML = '';
                 logs.slice(0, 5).forEach(log => {
@@ -306,40 +405,52 @@
                     `;
                     logBody.appendChild(tr);
                 });
-
-                // Update Status Chart
-                const chart = document.getElementById('chart');
-                chart.innerHTML = '';
-                for(let i=0; i<15; i++) {
-                    const bar = document.createElement('div');
-                    bar.className = 'bar';
-                    const height = logs[i] ? (80 + Math.random() * 20) : (Math.random() * 20); 
-                    bar.style.height = `${height}%`;
-                    chart.appendChild(bar);
-                }
             }
 
-            // Update BTC Stats
+            // Update Cards from data.json history
             if (prices.length > 0) {
-                const latestPrice = prices[prices.length - 1];
-                document.getElementById('btc-price').innerText = `$${latestPrice.price.toLocaleString()}`;
+                const latestData = prices[prices.length - 1];
+                
+                // BTC
+                if(latestData.price) document.getElementById('btc-price').innerText = `$${latestData.price.toLocaleString()}`;
+                
+                // Weather
+                if(latestData.weather) {
+                    document.getElementById('weather-temp').innerText = `${latestData.weather.temp}°C`;
+                    document.getElementById('weather-desc').innerText = `Condition Code: ${latestData.weather.condition}`;
+                }
 
-                const btcChart = document.getElementById('btc-chart');
-                btcChart.innerHTML = '';
-                const maxPrice = Math.max(...prices.map(p => p.price));
-                const minPrice = Math.min(...prices.map(p => p.price));
-                const range = maxPrice - minPrice || 1;
+                // GitHub
+                if(latestData.github) {
+                    const gh = latestData.github;
+                    document.getElementById('github-repos').innerText = `${gh.public_repos + gh.private_repos} Repos`;
+                    document.getElementById('github-details').innerText = `${gh.followers} Followers • ${gh.private_repos} Private`;
+                    if(gh.top_project) {
+                        document.getElementById('project-name').innerText = `${gh.top_project.name} (★${gh.top_project.stars})`;
+                    }
+                }
 
-                prices.slice(-15).forEach(p => {
-                    const bar = document.createElement('div');
-                    bar.className = 'bar';
-                    // Scale height between 30% and 100%
-                    const height = 30 + ((p.price - minPrice) / range) * 70;
-                    bar.style.height = `${height}%`;
-                    bar.title = `$${p.price.toLocaleString()} at ${new Date(p.time).toLocaleTimeString()}`;
-                    btcChart.appendChild(bar);
-                });
+                // Render Charts
+                renderChart('btc-chart', prices.map(p => p.price));
+                renderChart('weather-chart', prices.map(p => p.weather ? p.weather.temp : null).filter(t => t !== null));
             }
+        }
+
+        function renderChart(id, values) {
+            const container = document.getElementById(id);
+            if(!container) return;
+            container.innerHTML = '';
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const range = max - min || 1;
+
+            values.slice(-15).forEach(v => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const height = 30 + ((v - min) / range) * 70;
+                bar.style.height = `${height}%`;
+                container.appendChild(bar);
+            });
         }
 
         async function init() {

@@ -66,8 +66,61 @@ async function fetchBitcoinPrice() {
     }
 }
 
-// Function to update data.json with price history
-function updateData(price) {
+// Function to fetch weather
+async function fetchWeather(lat, lon) {
+    try {
+        console.log(`Fetching weather for ${lat}, ${lon}...`);
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return {
+            temp: data.current_weather.temp,
+            condition: data.current_weather.weathercode,
+            time: data.current_weather.time
+        };
+    } catch (error) {
+        console.error('Error fetching weather:', error);
+        return null;
+    }
+}
+
+// Function to fetch GitHub stats
+async function fetchGitHubStats(username) {
+    try {
+        console.log(`Fetching GitHub stats for ${username}...`);
+        const headers = {};
+        if (process.env.GITHUB_PAT) {
+            headers['Authorization'] = `token ${process.env.GITHUB_PAT}`;
+        }
+        
+        // Fetch user profile
+        const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
+        if (!userRes.ok) throw new Error(`User API error! status: ${userRes.status}`);
+        const userData = await userRes.json();
+
+        // Fetch top starred repo
+        const repoRes = await fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=1`, { headers });
+        const repos = repoRes.ok ? await repoRes.json() : [];
+        const topProject = repos.length > 0 ? {
+            name: repos[0].name,
+            stars: repos[0].stargazers_count,
+            language: repos[0].language
+        } : null;
+
+        return {
+            followers: userData.followers,
+            public_repos: userData.public_repos,
+            private_repos: userData.total_private_repos || 0,
+            top_project: topProject
+        };
+    } catch (error) {
+        console.error('Error fetching GitHub stats:', error);
+        return null;
+    }
+}
+
+// Function to update data.json with history
+function updateData(btcPrice, weather, github) {
     const dataPath = path.join(__dirname, 'data.json');
     let history = [];
     if (fs.existsSync(dataPath)) {
@@ -81,10 +134,12 @@ function updateData(price) {
     
     history.push({
         time: new Date().toISOString(),
-        price: price
+        price: btcPrice,
+        weather: weather,
+        github: github
     });
 
-    // Keep only last 24 entries (one day if hourly)
+    // Keep only last 24 entries
     if (history.length > 24) history.shift();
 
     fs.writeFileSync(dataPath, JSON.stringify(history, null, 2));
@@ -92,17 +147,30 @@ function updateData(price) {
 
 // Create a function to run the daemon in the background
 async function touchFile() {
-    const filepath = path.join(__dirname, 'daemon.txt');
-    const content = `Daemon run at: ${new Date().toLocaleString()}\n`;
-    fs.appendFileSync(filepath, content);
-    
-    const price = await fetchBitcoinPrice();
-    if (price) {
-        console.log(`Bitcoin price: $${price}`);
-        updateData(price);
+    try {
+        const filepath = path.join(__dirname, 'daemon.txt');
+        const content = `Daemon run at: ${new Date().toLocaleString()}\n`;
+        fs.appendFileSync(filepath, content);
+        
+        // Read config
+        const configPath = path.join(__dirname, 'config.json');
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+
+        const [price, weather, github] = await Promise.all([
+            fetchBitcoinPrice(),
+            fetchWeather(config.location.lat, config.location.lon),
+            fetchGitHubStats(config.github.username)
+        ]);
+
+        if (price || weather || github) {
+            updateData(price, weather, github);
+        }
+        
+        logActivity('success');
+    } catch (error) {
+        console.error('Error in touchFile:', error);
+        logActivity('error', error.toString());
     }
-    
-    logActivity('success');
 }
 
 //deamoning
