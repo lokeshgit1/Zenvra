@@ -14,5 +14,20 @@
   {
     "time": "2026-03-21T07:34:59.466Z",
     "price": 70783
+  },
+  {
+    "time": "2026-03-21T07:50:05.201Z",
+    "price": 70730,
+    "weather": null,
+    "github": {
+      "followers": 1,
+      "public_repos": 23,
+      "private_repos": 0,
+      "top_project": {
+        "name": "Zenvra",
+        "stars": 0,
+        "language": "HTML"
+      }
+    }
   }
 ]
