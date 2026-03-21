@@ -16,9 +16,18 @@
     "price": 70783
   },
   {
+<<<<<<< HEAD
     "time": "2026-03-21T07:50:05.201Z",
     "price": 70730,
     "weather": null,
+=======
+    "time": "2026-03-21T07:49:35.498Z",
+    "price": 70715,
+    "weather": {
+      "condition": 2,
+      "time": "2026-03-21T07:45"
+    },
+>>>>>>> c97fb21 (feat: add advanced weather and github stats)
     "github": {
       "followers": 1,
       "public_repos": 23,

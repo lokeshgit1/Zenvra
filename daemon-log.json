@@ -39,5 +39,10 @@
 {"time":"2026-03-21T07:33:33.322Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nerror: cannot pull with rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"}
 {"time":"2026-03-21T07:34:59.467Z","type":"auto","status":"success","error":null}
 {"time":"2026-03-21T07:34:59.662Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nerror: cannot pull with rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"}
+<<<<<<< HEAD
 {"time":"2026-03-21T07:50:05.202Z","type":"auto","status":"success","error":null}
 {"time":"2026-03-21T07:50:05.486Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nerror: cannot pull with rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"}
+=======
+{"time":"2026-03-21T07:49:35.499Z","type":"auto","status":"success","error":null}
+{"time":"2026-03-21T07:49:36.370Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nFrom https://github.com/lokeshgit1/Zenvra\n * branch            main       -> FETCH_HEAD\nerror: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"}
+>>>>>>> c97fb21 (feat: add advanced weather and github stats)
