@@ -233,6 +233,42 @@
             margin-right: 4px;
         }
 
+        .uptime-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .monitor-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-pill {
+            padding: 0.25rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .status-online {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .status-offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
         .search-container {
             display: none;
             position: fixed;
@@ -359,10 +395,14 @@
                     <!-- Status bars injected here -->
                 </div>
             </div>
-        </div>
-
-        <div class="card">
-            <span class="card-label">Recent Activity Log</span>
+            <div class="card" style="grid-column: span 1;">
+                <span class="card-label">Website Uptime Monitor</span>
+                <div class="uptime-list" id="uptime-list">
+                    <!-- Monitor items injected here -->
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-label">Recent Activity Log</span>
             <table class="log-table">
                 <thead>
                     <tr>
@@ -507,6 +547,11 @@
                     document.getElementById('weather-desc').innerText = `Condition Code: ${latestData.weather.condition}`;
                 }
 
+                // Uptime
+                if(latestData.uptime) {
+                    renderUptime(latestData.uptime);
+                }
+
                 // GitHub
                 if(latestData.github) {
                     const gh = latestData.github;
@@ -527,6 +572,28 @@
                 renderChart('btc-chart', prices.map(p => p.price));
                 renderChart('weather-chart', prices.map(p => p.weather ? p.weather.temp : null).filter(t => t !== null));
             }
+        }
+
+        function renderUptime(monitors) {
+            const list = document.getElementById('uptime-list');
+            if(!list) return;
+            list.innerHTML = '';
+            
+            monitors.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'monitor-item';
+                const shortUrl = m.url.replace('https://', '').replace('/', '');
+                item.innerHTML = `
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 600; font-size: 0.9rem;">${shortUrl}</span>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">${m.responseTime ? m.responseTime + 'ms' : 'Timeout'}</span>
+                    </div>
+                    <span class="status-pill ${m.status === 'online' ? 'status-online' : 'status-offline'}">
+                        ${m.status}
+                    </span>
+                `;
+                list.appendChild(item);
+            });
         }
 
         const langColors = {

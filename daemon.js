@@ -84,6 +84,33 @@ async function fetchWeather(lat, lon) {
     }
 }
 
+// Function to ping websites
+async function pingSites(urls) {
+    const results = [];
+    for (const url of urls) {
+        try {
+            console.log(`Pinging ${url}...`);
+            const start = Date.now();
+            const response = await fetch(url, { method: 'GET', timeout: 5000 });
+            const responseTime = Date.now() - start;
+            results.push({
+                url: url,
+                status: response.ok ? 'online' : 'offline',
+                responseTime: responseTime,
+                code: response.status
+            });
+        } catch (error) {
+            console.error(`Error pinging ${url}:`, error);
+            results.push({
+                url: url,
+                status: 'offline',
+                error: error.toString()
+            });
+        }
+    }
+    return results;
+}
+
 // Function to fetch GitHub stats
 async function fetchGitHubStats(username) {
     try {
@@ -150,7 +177,7 @@ async function fetchGitHubStats(username) {
 }
 
 // Function to update data.json with history
-function updateData(btcPrice, weather, github) {
+function updateData(btcPrice, weather, github, uptime) {
     const dataPath = path.join(__dirname, 'data.json');
     let history = [];
     if (fs.existsSync(dataPath)) {
@@ -172,7 +199,8 @@ function updateData(btcPrice, weather, github) {
         time: new Date().toISOString(),
         price: btcPrice,
         weather: weather,
-        github: github
+        github: github,
+        uptime: uptime
     });
 
     // Keep only last 24 entries
@@ -192,14 +220,15 @@ async function touchFile() {
         const configPath = path.join(__dirname, 'config.json');
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
-        const [price, weather, github] = await Promise.all([
+        const [price, weather, github, uptime] = await Promise.all([
             fetchBitcoinPrice(),
             fetchWeather(config.location.lat, config.location.lon),
-            fetchGitHubStats(config.github.username)
+            fetchGitHubStats(config.github.username),
+            pingSites(config.monitors || [])
         ]);
 
-        if (price || weather || github) {
-            updateData(price, weather, github);
+        if (price || weather || github || uptime) {
+            updateData(price, weather, github, uptime);
         }
         
         logActivity('success');
