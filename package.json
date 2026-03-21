@@ -4,7 +4,7 @@
   "description": "AI-powered automated git commits and syncing daemon.",
   "main": "index.js",
   "bin": {
-    "automo": "./bin/cli.js"
+    "automo": "bin/cli.js"
   },
   "files": [
     "bin",
