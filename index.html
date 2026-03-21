@@ -568,7 +568,7 @@
 
         function renderChart(id, values) {
             const container = document.getElementById(id);
-            if(!container) return;
+            if(!container || !values || values.length === 0) return;
             container.innerHTML = '';
             const max = Math.max(...values);
             const min = Math.min(...values);
