@@ -35,9 +35,10 @@ jobs:
           git add .
           git diff --cached --quiet || git commit -m "chore: automated update $(date)"
 
-      - name: 🚀 Push
+      - name: 🚀 Pull and Push
         run: |
-          git push origin HEAD:auto-bot
+          git pull --rebase origin main
+          git push origin main
 
       - name: 🌐 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
