@@ -156,12 +156,18 @@ function updateData(btcPrice, weather, github) {
     if (fs.existsSync(dataPath)) {
         try {
             const content = fs.readFileSync(dataPath, 'utf8');
-            history = JSON.parse(content || '[]');
+            // Clean up potential git conflict markers if they exist
+            const cleanContent = content.replace(/<<<<<<<[\s\S]*?=======[\s\S]*?>>>>>>>.*?\n/g, '');
+            history = JSON.parse(cleanContent || '[]');
         } catch (e) {
-            console.error('Error reading data.json:', e);
+            console.error('Error reading/parsing data.json, resetting:', e);
+            history = [];
         }
     }
     
+    // Ensure history is an array
+    if (!Array.isArray(history)) history = [];
+
     history.push({
         time: new Date().toISOString(),
         price: btcPrice,
