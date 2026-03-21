@@ -174,6 +174,65 @@
             background: var(--error-color);
         }
 
+        .github-achievements {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .achievement-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .achievement-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .achievement-count {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .lang-bar-container {
+            margin-top: 1.5rem;
+        }
+        
+        .lang-bar {
+            height: 8px;
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .lang-segment {
+            height: 100%;
+        }
+        
+        .lang-labels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+        }
+        
+        .lang-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
         .search-container {
             display: none;
             position: fixed;
@@ -251,12 +310,36 @@
                 <div id="weather-desc" style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</div>
                 <div class="chart-container" id="weather-chart"></div>
             </div>
-            <div class="card">
-                <span class="card-label">GitHub Profile</span>
-                <div class="card-value" id="github-repos">0 Repos</div>
-                <div id="github-details" style="color: var(--text-secondary); font-size: 0.875rem;">...</div>
-                <div id="top-project" style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; font-size: 0.8rem;">
-                    <span style="color: var(--primary-color); font-weight: 600;">Top Project:</span> <span id="project-name">...</span>
+            <div class="card" style="grid-column: span 2;">
+                <span class="card-label">GitHub Achievements</span>
+                <div class="github-achievements">
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total Stars</span>
+                        <span class="achievement-count" id="gh-stars">--</span>
+                    </div>
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total Commits</span>
+                        <span class="achievement-count" id="gh-commits">--</span>
+                    </div>
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total PRs</span>
+                        <span class="achievement-count" id="gh-prs">--</span>
+                    </div>
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total Issues</span>
+                        <span class="achievement-count" id="gh-issues">--</span>
+                    </div>
+                </div>
+                
+                <div class="lang-bar-container">
+                    <span class="achievement-label">Most Used Languages</span>
+                    <div class="lang-bar" id="lang-bar"></div>
+                    <div class="lang-labels" id="lang-labels"></div>
+                </div>
+
+                <div id="top-project" style="margin-top: 1.5rem; padding: 1rem; background: rgba(38, 189, 248, 0.05); border: 1px solid rgba(38, 189, 248, 0.1); border-radius: 1rem;">
+                    <span class="achievement-label">Top Project</span>
+                    <div style="font-size: 1rem; font-weight: 600; margin-top: 0.25rem;" id="project-name">...</div>
                 </div>
             </div>
             <div class="card">
@@ -423,17 +506,60 @@
                 // GitHub
                 if(latestData.github) {
                     const gh = latestData.github;
-                    document.getElementById('github-repos').innerText = `${gh.public_repos + gh.private_repos} Repos`;
-                    document.getElementById('github-details').innerText = `${gh.followers} Followers • ${gh.private_repos} Private`;
+                    document.getElementById('gh-stars').innerText = gh.total_stars || 0;
+                    document.getElementById('gh-commits').innerText = gh.total_commits || 0;
+                    document.getElementById('gh-prs').innerText = gh.total_prs || 0;
+                    document.getElementById('gh-issues').innerText = gh.total_issues || 0;
+                    
                     if(gh.top_project) {
                         document.getElementById('project-name').innerText = `${gh.top_project.name} (★${gh.top_project.stars})`;
                     }
+
+                    // Render Language Bar
+                    renderLangBar(gh.languages);
                 }
 
                 // Render Charts
                 renderChart('btc-chart', prices.map(p => p.price));
                 renderChart('weather-chart', prices.map(p => p.weather ? p.weather.temp : null).filter(t => t !== null));
             }
+        }
+
+        const langColors = {
+            'TypeScript': '#3178c6',
+            'JavaScript': '#f1e05a',
+            'HTML': '#e34c26',
+            'CSS': '#563d7c',
+            'Python': '#3572A5',
+            'C++': '#f34b7d',
+            'Java': '#b07219'
+        };
+
+        function renderLangBar(languages) {
+            const bar = document.getElementById('lang-bar');
+            const labelContainer = document.getElementById('lang-labels');
+            if(!bar || !languages) return;
+            
+            bar.innerHTML = '';
+            labelContainer.innerHTML = '';
+            
+            const sorted = Object.entries(languages).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            
+            sorted.forEach(([lang, percent]) => {
+                const color = langColors[lang] || `hsl(${Math.random() * 360}, 70%, 50%)`;
+                
+                // Bar segment
+                const segment = document.createElement('div');
+                segment.className = 'lang-segment';
+                segment.style.width = `${percent}%`;
+                segment.style.backgroundColor = color;
+                bar.appendChild(segment);
+                
+                // Label
+                const label = document.createElement('div');
+                label.innerHTML = `<span class="lang-dot" style="background: ${color}"></span> ${lang} ${percent}%`;
+                labelContainer.appendChild(label);
+            });
         }
 
         function renderChart(id, values) {

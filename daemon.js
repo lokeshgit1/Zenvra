@@ -88,19 +88,44 @@ async function fetchWeather(lat, lon) {
 async function fetchGitHubStats(username) {
     try {
         console.log(`Fetching GitHub stats for ${username}...`);
-        const headers = {};
+        const headers = { 'Accept': 'application/vnd.github.v3+json' };
         if (process.env.GITHUB_PAT) {
             headers['Authorization'] = `token ${process.env.GITHUB_PAT}`;
         }
         
-        // Fetch user profile
-        const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
+        // Parallel fetch for main profile and activity counts
+        const [userRes, commitRes, prRes, issueRes, reposRes] = await Promise.all([
+            fetch(`https://api.github.com/users/${username}`, { headers }),
+            fetch(`https://api.github.com/search/commits?q=author:${username}`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:pr`, { headers }),
+            fetch(`https://api.github.com/search/issues?q=author:${username}+type:issue`, { headers }),
+            fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=30`, { headers })
+        ]);
+
         if (!userRes.ok) throw new Error(`User API error! status: ${userRes.status}`);
         const userData = await userRes.json();
+        const totalCommits = commitRes.ok ? (await commitRes.json()).total_count : 0;
+        const totalPRs = prRes.ok ? (await prRes.json()).total_count : 0;
+        const totalIssues = issueRes.ok ? (await issueRes.json()).total_count : 0;
+        const repos = reposRes.ok ? await reposRes.json() : [];
 
-        // Fetch top starred repo
-        const repoRes = await fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=1`, { headers });
-        const repos = repoRes.ok ? await repoRes.json() : [];
+        // Aggregate stars and languages
+        let totalStars = 0;
+        const langMap = {};
+        for (const repo of repos) {
+            totalStars += repo.stargazers_count;
+            if (repo.language) {
+                langMap[repo.language] = (langMap[repo.language] || 0) + 1;
+            }
+        }
+
+        // Convert language map to percentages
+        const totalLangs = Object.values(langMap).reduce((a, b) => a + b, 0);
+        const languages = {};
+        for (const lang in langMap) {
+            languages[lang] = Math.round((langMap[lang] / totalLangs) * 10000) / 100;
+        }
+
         const topProject = repos.length > 0 ? {
             name: repos[0].name,
             stars: repos[0].stargazers_count,
@@ -111,6 +136,11 @@ async function fetchGitHubStats(username) {
             followers: userData.followers,
             public_repos: userData.public_repos,
             private_repos: userData.total_private_repos || 0,
+            total_stars: totalStars,
+            total_commits: totalCommits,
+            total_prs: totalPRs,
+            total_issues: totalIssues,
+            languages: languages,
             top_project: topProject
         };
     } catch (error) {
