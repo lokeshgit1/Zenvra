@@ -1,32 +1,10 @@
 [
   {
-    "time": "2026-03-21T07:50:47.129Z",
-    "price": 70730,
+    "time": "2026-03-21T08:00:21.129Z",
+    "price": 70694,
     "weather": {
       "condition": 2,
-      "time": "2026-03-21T07:45"
-    },
-    "github": {
-      "followers": 1,
-      "public_repos": 23,
-      "private_repos": 0,
-      "top_project": {
-        "name": "Zenvra",
-        "stars": 0,
-        "language": "HTML"
-      }
-    }
-  },
-  {
-<<<<<<< HEAD
-    "time": "2026-03-21T07:59:46.545Z",
-=======
-    "time": "2026-03-21T07:59:25.774Z",
->>>>>>> 43d25dc (feat: enhance github achievements and languages)
-    "price": 70687,
-    "weather": {
-      "condition": 2,
-      "time": "2026-03-21T07:45"
+      "time": "2026-03-21T08:00"
     },
     "github": {
       "followers": 1,
