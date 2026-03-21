@@ -404,10 +404,14 @@
                 const logText = logRes.ok ? await logRes.text() : '';
                 const logs = logText.trim().split('\n')
                     .filter(line => line.trim())
-                    .map(line => JSON.parse(line))
+                    .map(line => {
+                        try { return JSON.parse(line); } 
+                        catch(e) { return null; }
+                    })
+                    .filter(l => l)
                     .reverse();
 
-                return { prices: priceData, logs: logs };
+                return { prices: Array.isArray(priceData) ? priceData : [], logs: logs };
             } catch (error) {
                 console.error('Fetch error:', error);
                 return { prices: [], logs: [] };
