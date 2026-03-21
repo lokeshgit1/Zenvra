@@ -18,7 +18,11 @@
     }
   },
   {
+<<<<<<< HEAD
     "time": "2026-03-21T07:59:46.545Z",
+=======
+    "time": "2026-03-21T07:59:25.774Z",
+>>>>>>> 43d25dc (feat: enhance github achievements and languages)
     "price": 70687,
     "weather": {
       "condition": 2,

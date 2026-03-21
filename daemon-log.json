@@ -48,5 +48,10 @@
 >>>>>>> c97fb21 (feat: add advanced weather and github stats)
 {"time":"2026-03-21T07:50:47.129Z","type":"auto","status":"success","error":null}
 {"time":"2026-03-21T07:50:47.918Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nFrom https://github.com/lokeshgit1/Zenvra\n * branch            main       -> FETCH_HEAD\nfatal: It seems that there is already a rebase-merge directory, and\nI wonder if you are in the middle of another rebase.  If that is the\ncase, please try\n\tgit rebase (--continue | --abort | --skip)\nIf that is not the case, please\n\trm -fr \".git/rebase-merge\"\nand run me again.  I am stopping in case you still have something\nvaluable there.\n\n"}
+<<<<<<< HEAD
 {"time":"2026-03-21T07:59:46.545Z","type":"auto","status":"success","error":null}
 {"time":"2026-03-21T07:59:47.261Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nFrom https://github.com/lokeshgit1/Zenvra\n * branch            main       -> FETCH_HEAD\nfatal: It seems that there is already a rebase-merge directory, and\nI wonder if you are in the middle of another rebase.  If that is the\ncase, please try\n\tgit rebase (--continue | --abort | --skip)\nIf that is not the case, please\n\trm -fr \".git/rebase-merge\"\nand run me again.  I am stopping in case you still have something\nvaluable there.\n\n"}
+=======
+{"time":"2026-03-21T07:59:25.774Z","type":"auto","status":"success","error":null}
+{"time":"2026-03-21T07:59:26.866Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nFrom https://github.com/lokeshgit1/Zenvra\n * branch            main       -> FETCH_HEAD\nerror: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"}
+>>>>>>> 43d25dc (feat: enhance github achievements and languages)
