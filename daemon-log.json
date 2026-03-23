@@ -45,3 +45,6 @@
 {"time":"2026-03-23T08:06:17.430Z","type":"auto","status":"success","error":null}
 {"time":"2026-03-23T08:58:45.942Z","type":"auto","status":"success","error":null}
 {"time":"2026-03-23T08:58:49.773Z","type":"auto","status":"error","error":"Command failed: git add .\n"}
+{"time":"2026-03-23T09:58:47.677Z","type":"auto","status":"success","error":null}
+{"time":"2026-03-23T09:58:53.712Z","type":"auto","status":"error","error":"Command failed: git pull --rebase origin main\nerror: cannot pull with rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"}
+{"time":"2026-03-23T13:48:35.134Z","type":"auto","status":"success","error":null}
