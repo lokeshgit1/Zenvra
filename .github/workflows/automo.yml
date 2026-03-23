@@ -1,0 +1,23 @@
+name: Automo Sync
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Automo
+        run: npm install -g automo-git # Placeholder name
+      - name: Run Automo Sync
+        run: automo sync
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

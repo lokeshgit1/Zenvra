@@ -49,6 +49,7 @@
             font-weight: 700;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #38bdf8, #818cf8);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -173,6 +174,149 @@
             background: var(--error-color);
         }
 
+        .github-achievements {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .achievement-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .achievement-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .achievement-count {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .lang-bar-container {
+            margin-top: 1.5rem;
+        }
+        
+        .lang-bar {
+            height: 8px;
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .lang-segment {
+            height: 100%;
+        }
+        
+        .lang-labels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+        }
+        
+        .lang-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .uptime-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .monitor-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-pill {
+            padding: 0.25rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .status-online {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .status-offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .search-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+        
+        .search-container.active { display: block; }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+        
+        .overlay.active { display: block; }
+
         footer {
             text-align: center;
             color: var(--text-secondary);
@@ -194,6 +338,56 @@
 
         <div class="grid">
             <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <span class="card-label">Weather Tracking</span>
+                    <button class="btn" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="toggleSearch()">Change</button>
+                </div>
+                <div class="card-value" id="weather-temp">--°C</div>
+                <div id="weather-desc" style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</div>
+                <div class="chart-container" id="weather-chart"></div>
+            </div>
+            <div class="card" style="grid-column: span 2;">
+                <span class="card-label">GitHub Achievements</span>
+                <div class="github-achievements">
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total Stars</span>
+                        <span class="achievement-count" id="gh-stars">--</span>
+                    </div>
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total Commits</span>
+                        <span class="achievement-count" id="gh-commits">--</span>
+                    </div>
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total PRs</span>
+                        <span class="achievement-count" id="gh-prs">--</span>
+                    </div>
+                    <div class="achievement-item">
+                        <span class="achievement-label">Total Issues</span>
+                        <span class="achievement-count" id="gh-issues">--</span>
+                    </div>
+                </div>
+                
+                <div class="lang-bar-container">
+                    <span class="achievement-label">Most Used Languages</span>
+                    <div class="lang-bar" id="lang-bar"></div>
+                    <div class="lang-labels" id="lang-labels"></div>
+                </div>
+
+                <div id="top-project" style="margin-top: 1.5rem; padding: 1rem; background: rgba(38, 189, 248, 0.05); border: 1px solid rgba(38, 189, 248, 0.1); border-radius: 1rem;">
+                    <span class="achievement-label">Top Project</span>
+                    <div style="font-size: 1rem; font-weight: 600; margin-top: 0.25rem;" id="project-name">...</div>
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-label">Bitcoin Price (USD)</span>
+                <div class="card-value" id="btc-price">$0</div>
+                <div class="chart-container" id="btc-chart"></div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">USD / INR</span>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary-color);" id="usd-inr">₹--.--</span>
+                </div>
+            </div>
+            <div class="card">
                 <span class="card-label">Last Successful Run</span>
                 <div class="card-value" id="last-run-time">...</div>
                 <div id="last-run-relative" style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.875rem;">Connecting...</div>
@@ -202,13 +396,17 @@
                 <span class="card-label">Total Hourly Runs</span>
                 <div class="card-value" id="total-runs">0</div>
                 <div class="chart-container" id="chart">
-                    <!-- Bars injected here -->
+                    <!-- Status bars injected here -->
                 </div>
             </div>
-        </div>
-
-        <div class="card">
-            <span class="card-label">Recent Activity Log</span>
+            <div class="card" style="grid-column: span 1;">
+                <span class="card-label">Website Uptime Monitor</span>
+                <div class="uptime-list" id="uptime-list">
+                    <!-- Monitor items injected here -->
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-label">Recent Activity Log</span>
             <table class="log-table">
                 <thead>
                     <tr>
@@ -223,25 +421,44 @@
             </table>
         </div>
 
+        <div class="overlay" id="overlay" onclick="toggleSearch()"></div>
+        <div class="search-container" id="search-box">
+            <h3 style="margin-bottom: 1rem;">Set Location</h3>
+            <input type="text" class="search-input" id="city-input" placeholder="Enter city name (e.g. London)">
+            <button class="btn" onclick="searchCity()">Search & Set</button>
+            <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 1rem;">
+                *Note: This updates your view. To update the bot, edit `config.json`.
+            </p>
+        </div>
+
         <footer>
             Auto-refreshing every 60s • Built with 🤖 Antigravity
         </footer>
     </div>
 
     <script>
-        async function fetchLogs() {
+        async function fetchData() {
             try {
+                // Fetch the price history
+                const priceRes = await fetch('data.json');
+                const priceData = priceRes.ok ? await priceRes.json() : [];
+
                 // Fetch the log file
-                const response = await fetch('daemon-log.json');
-                if (!response.ok) throw new Error('Log file not found');
-                const text = await response.text();
-                
-                // Parse JSONL (one JSON per line)
-                const logs = text.trim().split('\n').map(line => JSON.parse(line)).reverse();
-                return logs;
+                const logRes = await fetch('daemon-log.json');
+                const logText = logRes.ok ? await logRes.text() : '';
+                const logs = logText.trim().split('\n')
+                    .filter(line => line.trim())
+                    .map(line => {
+                        try { return JSON.parse(line); } 
+                        catch(e) { return null; }
+                    })
+                    .filter(l => l)
+                    .reverse();
+
+                return { prices: Array.isArray(priceData) ? priceData : [], logs: logs };
             } catch (error) {
                 console.error('Fetch error:', error);
-                return [];
+                return { prices: [], logs: [] };
             }
         }
 
@@ -255,61 +472,192 @@
             return date.toLocaleDateString();
         }
 
-        function updateUI(logs) {
-            if (logs.length === 0) return;
+                function toggleSearch() {
+            document.getElementById('search-box').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
 
-            const latest = logs[0];
-            const latestDate = new Date(latest.time);
-            
-            // Update Main Status
-            const statusBadge = document.getElementById('main-status');
-            const now = new Date();
-            const hoursSinceLast = (now - latestDate) / (1000 * 60 * 60);
+        async function searchCity() {
+            const city = document.getElementById('city-input').value;
+            if(!city) return;
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const data = await res.json();
+                if(data.results && data.results.length > 0) {
+                    const loc = data.results[0];
+                    localStorage.setItem('user-location', JSON.stringify({
+                        name: loc.name,
+                        lat: loc.latitude,
+                        lon: loc.longitude
+                    }));
+                    alert(`Location set to ${loc.name}! Refreshing...`);
+                    location.reload();
+                } else {
+                    alert('City not found!');
+                }
+            } catch(e) { console.error(e); }
+        }
 
-            if (latest.status === 'error' || hoursSinceLast > 2) {
-                statusBadge.innerHTML = '<span class="dot"></span> System Warning';
-                statusBadge.classList.add('error');
-            } else {
-                statusBadge.innerHTML = '<span class="dot"></span> System Operational';
-                statusBadge.classList.remove('error');
+        function updateUI(data) {
+            const logs = data.logs;
+            const prices = data.prices;
+
+            if (logs.length > 0) {
+                const latest = logs[0];
+                const latestDate = new Date(latest.time);
+                
+                // Update Main Status
+                const statusBadge = document.getElementById('main-status');
+                const now = new Date();
+                const hoursSinceLast = (now - latestDate) / (1000 * 60 * 60);
+
+                if (latest.status === 'error' || hoursSinceLast > 2) {
+                    statusBadge.innerHTML = '<span class="dot"></span> System Warning';
+                    statusBadge.classList.add('error');
+                } else {
+                    statusBadge.innerHTML = '<span class="dot"></span> System Operational';
+                    statusBadge.classList.remove('error');
+                }
+
+                // Update Run Stats
+                document.getElementById('last-run-time').innerText = latestDate.toLocaleTimeString();
+                document.getElementById('last-run-relative').innerText = formatRelativeTime(latestDate);
+                document.getElementById('total-runs').innerText = logs.length;
+
+                // Update Log Table
+                const logBody = document.getElementById('log-body');
+                logBody.innerHTML = '';
+                logs.slice(0, 5).forEach(log => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="timestamp">${new Date(log.time).toLocaleTimeString()}</td>
+                        <td>${log.type}</td>
+                        <td style="color: ${log.status === 'success' ? '#10b981' : '#ef4444'}">${log.status}</td>
+                    `;
+                    logBody.appendChild(tr);
+                });
             }
 
-            // Update Run Stats
-            document.getElementById('last-run-time').innerText = latestDate.toLocaleTimeString();
-            document.getElementById('last-run-relative').innerText = formatRelativeTime(latestDate);
-            document.getElementById('total-runs').innerText = logs.length;
+            // Update Cards from data.json history
+            if (prices.length > 0) {
+                const latestData = prices[prices.length - 1];
+                
+                // BTC & Exchange Rate
+                if(latestData.price) document.getElementById('btc-price').innerText = `$${latestData.price.toLocaleString()}`;
+                if(latestData.exchangeRate) document.getElementById('usd-inr').innerText = `₹${latestData.exchangeRate.toFixed(2)}`;
+                
+                // Weather
+                if(latestData.weather) {
+                    document.getElementById('weather-temp').innerText = `${latestData.weather.temp}°C`;
+                    document.getElementById('weather-desc').innerText = `Condition Code: ${latestData.weather.condition}`;
+                }
 
-            // Update Log Table (Last 5)
-            const logBody = document.getElementById('log-body');
-            logBody.innerHTML = '';
-            logs.slice(0, 5).forEach(log => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="timestamp">${new Date(log.time).toLocaleTimeString()}</td>
-                    <td>${log.type}</td>
-                    <td style="color: ${log.status === 'success' ? '#10b981' : '#ef4444'}">${log.status}</td>
-                `;
-                logBody.appendChild(tr);
-            });
+                // Uptime
+                if(latestData.uptime) {
+                    renderUptime(latestData.uptime);
+                }
 
-            // Update Simple Chart (Runs per day-like visualization)
-            // Just for demo, we'll show frequency of last 10 entries as mock segments
-            const chart = document.getElementById('chart');
-            chart.innerHTML = '';
-            const max = 100;
-            for(let i=0; i<15; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'bar';
-                // Random height for visualization demo unless we calculate real daily counts
-                const height = logs[i] ? (80 + Math.random() * 20) : (Math.random() * 20); 
-                bar.style.height = `${height}%`;
-                chart.appendChild(bar);
+                // GitHub
+                if(latestData.github) {
+                    const gh = latestData.github;
+                    document.getElementById('gh-stars').innerText = gh.total_stars || 0;
+                    document.getElementById('gh-commits').innerText = gh.total_commits || 0;
+                    document.getElementById('gh-prs').innerText = gh.total_prs || 0;
+                    document.getElementById('gh-issues').innerText = gh.total_issues || 0;
+                    
+                    if(gh.top_project) {
+                        document.getElementById('project-name').innerText = `${gh.top_project.name} (★${gh.top_project.stars})`;
+                    }
+
+                    // Render Language Bar
+                    renderLangBar(gh.languages);
+                }
+
+                // Render Charts
+                renderChart('btc-chart', prices.map(p => p.price));
+                renderChart('weather-chart', prices.map(p => p.weather ? p.weather.temp : null).filter(t => t !== null));
             }
         }
 
+        function renderUptime(monitors) {
+            const list = document.getElementById('uptime-list');
+            if(!list) return;
+            list.innerHTML = '';
+            
+            monitors.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'monitor-item';
+                const shortUrl = m.url.replace('https://', '').replace('/', '');
+                item.innerHTML = `
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 600; font-size: 0.9rem;">${shortUrl}</span>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">${m.responseTime ? m.responseTime + 'ms' : 'Timeout'}</span>
+                    </div>
+                    <span class="status-pill ${m.status === 'online' ? 'status-online' : 'status-offline'}">
+                        ${m.status}
+                    </span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        const langColors = {
+            'TypeScript': '#3178c6',
+            'JavaScript': '#f1e05a',
+            'HTML': '#e34c26',
+            'CSS': '#563d7c',
+            'Python': '#3572A5',
+            'C++': '#f34b7d',
+            'Java': '#b07219'
+        };
+
+        function renderLangBar(languages) {
+            const bar = document.getElementById('lang-bar');
+            const labelContainer = document.getElementById('lang-labels');
+            if(!bar || !languages) return;
+            
+            bar.innerHTML = '';
+            labelContainer.innerHTML = '';
+            
+            const sorted = Object.entries(languages).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            
+            sorted.forEach(([lang, percent]) => {
+                const color = langColors[lang] || `hsl(${Math.random() * 360}, 70%, 50%)`;
+                
+                // Bar segment
+                const segment = document.createElement('div');
+                segment.className = 'lang-segment';
+                segment.style.width = `${percent}%`;
+                segment.style.backgroundColor = color;
+                bar.appendChild(segment);
+                
+                // Label
+                const label = document.createElement('div');
+                label.innerHTML = `<span class="lang-dot" style="background: ${color}"></span> ${lang} ${percent}%`;
+                labelContainer.appendChild(label);
+            });
+        }
+
+        function renderChart(id, values) {
+            const container = document.getElementById(id);
+            if(!container || !values || values.length === 0) return;
+            container.innerHTML = '';
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const range = max - min || 1;
+
+            values.slice(-15).forEach(v => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const height = 30 + ((v - min) / range) * 70;
+                bar.style.height = `${height}%`;
+                container.appendChild(bar);
+            });
+        }
+
         async function init() {
-            const logs = await fetchLogs();
-            updateUI(logs);
+            const data = await fetchData();
+            updateUI(data);
         }
 
         // Initialize and setup refresh
