@@ -34,10 +34,11 @@ jobs:
           git add .
           git diff --cached --quiet || git commit -m "chore: automated update $(date)"
 
-      - name: 🚀 Pull and Push
+      - name: 🚀 Pull and Push to auto-bot
         run: |
-          git pull --rebase origin main
-          git push origin main
+          git checkout -B auto-bot
+          git pull --rebase origin auto-bot || true
+          git push origin auto-bot
 
       - name: 📤 Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
