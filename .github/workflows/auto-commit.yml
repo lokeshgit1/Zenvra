@@ -2,7 +2,8 @@ name: Auto Commit Bot
 
 on:
   schedule:
-    - cron: "0 */2 * * *"   # every 2 hours
+    - cron: "0 0,5,10,15,20 * * *"    # every 2.5 hours (full hours)
+    - cron: "30 2,7,12,17,22 * * *"   # every 2.5 hours (half hours)
   workflow_dispatch:
 
 permissions:
