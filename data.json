@@ -1,35 +1,5 @@
 [
   {
-    "time": "2026-03-21T08:12:59.192Z",
-    "price": 70715,
-    "weather": {
-      "condition": 2,
-      "time": "2026-03-21T08:00"
-    },
-    "github": {
-      "followers": 1,
-      "public_repos": 23,
-      "private_repos": 0,
-      "total_stars": 21,
-      "total_commits": 171,
-      "total_prs": 39,
-      "total_issues": 0,
-      "languages": {
-        "HTML": 5,
-        "Java": 5,
-        "TypeScript": 30,
-        "JavaScript": 45,
-        "CSS": 10,
-        "Python": 5
-      },
-      "top_project": {
-        "name": "Zenvra",
-        "stars": 0,
-        "language": "HTML"
-      }
-    }
-  },
-  {
     "time": "2026-03-21T08:14:14.015Z",
     "price": 70705,
     "weather": {
@@ -815,5 +785,22 @@
       }
     ],
     "exchangeRate": null
+  },
+  {
+    "time": "2026-03-24T04:53:16.782Z",
+    "price": 70282,
+    "weather": {
+      "condition": 1,
+      "time": "2026-03-24T04:45"
+    },
+    "github": null,
+    "uptime": [
+      {
+        "url": "https://aironflex-ai.vercel.app/",
+        "status": "offline",
+        "error": "TypeError: fetch failed"
+      }
+    ],
+    "exchangeRate": 93.460756
   }
 ]
