@@ -32,5 +32,5 @@ jobs:
       - name: 🔀 Merge auto-bot into main
         run: |
           git checkout -B main origin/main
-          git merge origin/auto-bot --no-edit
+          git merge origin/auto-bot --no-edit -X theirs
           git push origin main
