@@ -1,6 +1,10 @@
 name: Auto Merge auto-bot → main
 
 on:
+  workflow_run:
+    workflows: ["Auto Commit Bot"]
+    types:
+      - completed
   push:
     branches:
       - auto-bot
@@ -12,6 +16,7 @@ permissions:
 jobs:
   merge-to-main:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
@@ -26,6 +31,6 @@ jobs:
 
       - name: 🔀 Merge auto-bot into main
         run: |
-          git checkout main
-          git merge origin/auto-bot --no-edit
+          git checkout -B main origin/main
+          git merge origin/auto-bot --no-edit -X theirs
           git push origin main
